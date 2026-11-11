@@ -33,7 +33,47 @@ EquipmentGLP.SingProgram_inline0:
 
 SING.StealthHack:
   $base: QuickHack.PingHack
+  actionName: SINGStealthMode
+  targetActivePrereqs: []
   objectActionUI: SING.StealthHackUI
+  completionEffects:
+    - SING.StealthActivateEffect
+
+SING.StealthActivateEffect:
+  $type: gamedataObjectActionEffect_Record
+  recipient: ObjectActionReference.Instigator
+  statusEffect: BaseStatusEffect.SINGStealthActivate
+
+BaseStatusEffect.SINGStealthActivate:
+  $base: BaseStatusEffect.Ping
+  packages: []
+  gameplayTags:
+    - Quickhack
+  uiData: BaseStatusEffect.SINGActivationUI
+
+SING.DefenseActivateEffect:
+  $type: gamedataObjectActionEffect_Record
+  recipient: ObjectActionReference.Instigator
+  statusEffect: BaseStatusEffect.SINGDefenseActivate
+
+BaseStatusEffect.SINGDefenseActivate:
+  $base: BaseStatusEffect.Ping
+  packages: []
+  gameplayTags:
+    - Quickhack
+  uiData: BaseStatusEffect.SINGActivationUI
+
+BaseStatusEffect.SINGActivationUI:
+  $type: gamedataStatusEffectUIData_Record
+  description: ''
+  displayName: ''
+  fluffText: ''
+  iconPath: ''
+  priority: 0
+  floatValues: []
+  intValues: []
+  nameValues: []
+  stats: []
 
 SING.StealthHackUI:
   $base: Interactions.PingHack
@@ -42,7 +82,11 @@ SING.StealthHackUI:
 
 SING.DefenseHack:
   $base: QuickHack.PingHack
+  actionName: SINGDefenseMode
+  targetActivePrereqs: []
   objectActionUI: SING.DefenseHackUI
+  completionEffects:
+    - SING.DefenseActivateEffect
 
 SING.DefenseHackUI:
   $base: Interactions.PingHack
