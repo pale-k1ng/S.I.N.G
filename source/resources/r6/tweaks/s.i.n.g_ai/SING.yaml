@@ -33,6 +33,7 @@ EquipmentGLP.SingProgram_inline0:
 
 SING.StealthHack:
   $base: QuickHack.PingHack
+  actionName: SINGStealthMode
   objectActionUI: SING.StealthHackUI
 
 SING.StealthHackUI:
@@ -42,6 +43,7 @@ SING.StealthHackUI:
 
 SING.DefenseHack:
   $base: QuickHack.PingHack
+  actionName: SINGDefenseMode
   objectActionUI: SING.DefenseHackUI
 
 SING.DefenseHackUI:
