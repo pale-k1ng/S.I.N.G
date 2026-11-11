@@ -450,9 +450,7 @@ public func Trigger(ev: SingEvent, opt force: Bool) -> Void {
       this.m_stealthRunning = false;
       return;
     };
-    if this.IsEquipped() {
-      this.ScanNearby();
-    };
+    this.ScanNearby();
     this.ScheduleStealth();
   }
 
@@ -466,9 +464,7 @@ public func Trigger(ev: SingEvent, opt force: Bool) -> Void {
       this.m_defenseRunning = false;
       return;
     };
-    if this.IsEquipped() {
-      this.ScanHostiles();
-    };
+    this.ScanHostiles();
     this.ScheduleDefense();
   }
 
