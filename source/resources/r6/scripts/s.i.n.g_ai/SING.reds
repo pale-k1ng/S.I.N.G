@@ -40,6 +40,24 @@ public class SingDefenseCallback extends DelayCallback {
   }
 }
 
+public class SingStealthCallback extends DelayCallback {
+  public func Call() -> Void {
+    let sys = SingSystem.Get(GetGameInstance());
+    if IsDefined(sys) {
+      sys.OnStealthTick();
+    };
+  }
+}
+
+public class SingModeTimeoutCallback extends DelayCallback {
+  public func Call() -> Void {
+    let sys = SingSystem.Get(GetGameInstance());
+    if IsDefined(sys) {
+      sys.OnModeTimeout();
+    };
+  }
+}
+
 public class SingJobCallback extends DelayCallback {
   public let jobId: Int32;
 
@@ -49,6 +67,32 @@ public class SingJobCallback extends DelayCallback {
       sys.CompleteJob(this.jobId);
     };
   }
+}
+
+public class SingActivationListener extends ScriptStatusEffectListener {
+  private let m_player: wref<PlayerPuppet>;
+
+  public final func Initialize(player: wref<PlayerPuppet>) -> Void {
+    this.m_player = player;
+    GameInstance.GetStatusEffectSystem(player.GetGame()).RegisterListener(player.GetEntityID(), this);
+  }
+
+  public func OnStatusEffectApplied(statusEffect: wref<StatusEffect_Record>) -> Void {
+    if !IsDefined(statusEffect) || !IsDefined(this.m_player) {
+      return;
+    };
+    let sys = SingSystem.Get(this.m_player.GetGame());
+    if !IsDefined(sys) {
+      return;
+    };
+    if Equals(statusEffect.GetID(), t"BaseStatusEffect.SINGStealthActivate") {
+      sys.SetStealth();
+    } else if Equals(statusEffect.GetID(), t"BaseStatusEffect.SINGDefenseActivate") {
+      sys.SetDefense();
+    };
+  }
+
+  public func OnStatusEffectRemoved(statusEffect: wref<StatusEffect_Record>) -> Void {}
 }
 
 public class SingSystem extends ScriptableSystem {
@@ -66,7 +110,7 @@ public func IsInstalled() -> Bool {
 
 // true only if the S.I.N.G. quickhack is in the player's equipped cyberdeck
 private func IsEquipped() -> Bool {
-  let player = GameInstance.GetPlayerSystem(this.GetGameInstance()).GetLocalPlayerControlledGameObject() as PlayerPuppet;
+  let player = GameInstance.GetPlayerSystem(this.GetGameInstance()).GetLocalPlayerMainGameObject() as PlayerPuppet;
   if !IsDefined(player) {
     return false;
   };
@@ -95,6 +139,9 @@ private func IsEquipped() -> Bool {
   private let m_nextJobId: Int32;
   private let m_maxRange: Float = 25.0;
   private let m_defenseRunning: Bool;
+  private let m_stealthRunning: Bool;
+  private let m_modeActive: Bool;
+  private let m_modeEndTime: Float;
 
   // radius scan settings
   private let m_scanRadius: Float = 20.0;
@@ -116,8 +163,35 @@ private func IsEquipped() -> Bool {
   // sets a specific mode (the three quickhacks will call these)
   public func SetMode(mode: SingMode) -> Void {
     this.m_mode = mode;
+    this.m_modeActive = true;
+    this.m_modeEndTime = EngineTime.ToFloat(GameInstance.GetTimeSystem(this.GetGameInstance()).GetSimTime()) + 180.0;
+    this.m_defenseRunning = false;
+    this.m_stealthRunning = false;
+    this.ScheduleModeTimeout();
     this.Trigger(SingEvent.ModeSwitch, true);
-    this.StartDefenseLoop();
+    if Equals(mode, SingMode.Defense) {
+      this.StartDefenseLoop();
+    } else if Equals(mode, SingMode.Stealth) {
+      this.StartStealthLoop();
+    };
+  }
+
+  private func ScheduleModeTimeout() -> Void {
+    GameInstance.GetDelaySystem(this.GetGameInstance())
+      .DelayCallback(new SingModeTimeoutCallback(), 180.0, false);
+  }
+
+  public func OnModeTimeout() -> Void {
+    let now = EngineTime.ToFloat(GameInstance.GetTimeSystem(this.GetGameInstance()).GetSimTime());
+    if now < this.m_modeEndTime {
+      GameInstance.GetDelaySystem(this.GetGameInstance())
+        .DelayCallback(new SingModeTimeoutCallback(), this.m_modeEndTime - now, false);
+      return;
+    };
+    this.m_modeActive = false;
+    this.m_defenseRunning = false;
+    this.m_stealthRunning = false;
+    this.Say("Mode duration expired. Reactivation required.");
   }
 
   public func SetStealth() -> Void { this.SetMode(SingMode.Stealth); }
@@ -351,11 +425,35 @@ public func Trigger(ev: SingEvent, opt force: Bool) -> Void {
     // ===== DEFENSE MODE =====
 
   public func StartDefenseLoop() -> Void {
-    if this.m_defenseRunning || !Equals(this.m_mode, SingMode.Defense) {
+    if this.m_defenseRunning || !this.m_modeActive || !Equals(this.m_mode, SingMode.Defense) {
       return;
     };
     this.m_defenseRunning = true;
     this.ScheduleDefense();
+  }
+
+  public func StartStealthLoop() -> Void {
+    if this.m_stealthRunning || !this.m_modeActive || !Equals(this.m_mode, SingMode.Stealth) {
+      return;
+    };
+    this.m_stealthRunning = true;
+    this.ScheduleStealth();
+  }
+
+  private func ScheduleStealth() -> Void {
+    GameInstance.GetDelaySystem(this.GetGameInstance())
+      .DelayCallback(new SingStealthCallback(), 2.0, false);
+  }
+
+  public func OnStealthTick() -> Void {
+    if !this.m_modeActive || !Equals(this.m_mode, SingMode.Stealth) {
+      this.m_stealthRunning = false;
+      return;
+    };
+    if this.IsEquipped() {
+      this.ScanNearby();
+    };
+    this.ScheduleStealth();
   }
 
   private func ScheduleDefense() -> Void {
@@ -364,7 +462,7 @@ public func Trigger(ev: SingEvent, opt force: Bool) -> Void {
   }
 
   public func OnDefenseTick() -> Void {
-    if !Equals(this.m_mode, SingMode.Defense) {
+    if !this.m_modeActive || !Equals(this.m_mode, SingMode.Defense) {
       this.m_defenseRunning = false;
       return;
     };
@@ -502,13 +600,17 @@ protected cb func OnDeath(evt: ref<gameDeathEvent>) -> Bool {
 }
 
 // Start the idle loop once the player spawns
+@addField(PlayerPuppet)
+private let m_singActivationListener: ref<SingActivationListener>;
+
 @wrapMethod(PlayerPuppet)
 protected cb func OnGameAttached() -> Bool {
   let result = wrappedMethod();
   let sys = SingSystem.Get(this.GetGame());
   if IsDefined(sys) {
     sys.StartIdleLoop();
-    sys.StartDefenseLoop();
   };
+  this.m_singActivationListener = new SingActivationListener();
+  this.m_singActivationListener.Initialize(this);
   return result;
 }
