@@ -32,7 +32,7 @@ EquipmentGLP.SingProgram_inline0:
   stats: []
 
 SING.StealthHack:
-  $base: QuickHack.PingHack
+  $base: QuickHack.BasePingHack
   objectActionUI: SING.StealthHackUI
 
 SING.StealthHackUI:
@@ -41,7 +41,7 @@ SING.StealthHackUI:
   description: LocKey#SING_StealthHack_Description
 
 SING.DefenseHack:
-  $base: QuickHack.PingHack
+  $base: QuickHack.BasePingHack
   objectActionUI: SING.DefenseHackUI
 
 SING.DefenseHackUI:
