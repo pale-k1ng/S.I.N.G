@@ -89,6 +89,8 @@ public class SingActivationListener extends ScriptStatusEffectListener {
       sys.SetStealth();
     } else if Equals(statusEffect.GetID(), t"BaseStatusEffect.SINGDefenseActivate") {
       sys.SetDefense();
+    } else if Equals(statusEffect.GetID(), t"BaseStatusEffect.SINGOffenseActivate") {
+      sys.SetOffense();
     };
   }
 
@@ -120,7 +122,7 @@ private func IsEquipped() -> Bool {
   while i < ArraySize(hacks) {
     if IsDefined(hacks[i].actionRecord) {
       let id = hacks[i].actionRecord.GetID();
-      if Equals(id, t"SING.StealthHack") || Equals(id, t"SING.DefenseHack") {
+      if Equals(id, t"SING.StealthHack") || Equals(id, t"SING.DefenseHack") || Equals(id, t"SING.OffenseHack") {
         return true;
       };
     };
