@@ -8,6 +8,7 @@ Items.SingShard:
   objectActions:
     - SING.StealthHack
     - SING.DefenseHack
+    - SING.OffenseHack
   OnAttach:
     - !append-once EquipmentGLP.SingProgram
 
@@ -33,7 +34,23 @@ EquipmentGLP.SingProgram_inline0:
 
 SING.StealthHack:
   $base: QuickHack.BasePingHack
+  actionName: SING Stealth
+  gameplayCategory: ''
+  hackCategory: HackCategory.CovertHack
+  completionEffects:
+    - QuickHack.QuickHack_inline2
+    - QuickHack.QuickHack_inline8
+    - QuickHack.QuickHack_inline9
+    - SING.StealthActivateEffect
+  targetActivePrereqs:
+    - Prereqs.QuickHackUploadingPrereq
+    - Prereqs.ChimeraNoQuickHackPrereq
   objectActionUI: SING.StealthHackUI
+
+SING.StealthActivateEffect:
+  $type: gamedataObjectActionEffect_Record
+  recipient: ObjectActionReference.Instigator
+  statusEffect: BaseStatusEffect.SINGStealthActivate
 
 SING.StealthHackUI:
   $base: Interactions.PingHack
@@ -42,9 +59,155 @@ SING.StealthHackUI:
 
 SING.DefenseHack:
   $base: QuickHack.BasePingHack
+  actionName: SING Defense
+  gameplayCategory: ''
+  hackCategory: HackCategory.ControlHack
+  completionEffects:
+    - QuickHack.QuickHack_inline2
+    - QuickHack.QuickHack_inline8
+    - QuickHack.QuickHack_inline9
+    - SING.DefenseActivateEffect
+  targetActivePrereqs:
+    - Prereqs.QuickHackUploadingPrereq
+    - Prereqs.ChimeraNoQuickHackPrereq
   objectActionUI: SING.DefenseHackUI
+
+SING.DefenseActivateEffect:
+  $type: gamedataObjectActionEffect_Record
+  recipient: ObjectActionReference.Instigator
+  statusEffect: BaseStatusEffect.SINGDefenseActivate
 
 SING.DefenseHackUI:
   $base: Interactions.PingHack
   caption: LocKey#SING_DefenseHack_Name
   description: LocKey#SING_DefenseHack_Description
+
+SING.OffenseHack:
+  $base: QuickHack.BasePingHack
+  actionName: SING Offense
+  gameplayCategory: ''
+  hackCategory: HackCategory.CombatHack
+  completionEffects:
+    - QuickHack.QuickHack_inline2
+    - QuickHack.QuickHack_inline8
+    - QuickHack.QuickHack_inline9
+    - SING.OffenseActivateEffect
+  targetActivePrereqs:
+    - Prereqs.QuickHackUploadingPrereq
+    - Prereqs.ChimeraNoQuickHackPrereq
+  objectActionUI: SING.OffenseHackUI
+
+SING.OffenseActivateEffect:
+  $type: gamedataObjectActionEffect_Record
+  recipient: ObjectActionReference.Instigator
+  statusEffect: BaseStatusEffect.SINGOffenseActivate
+
+SING.OffenseHackUI:
+  $base: Interactions.PingHack
+  caption: S.I.N.G. // OFFENSE
+  description: Activates S.I.N.G. offense mode
+
+BaseStatusEffect.SINGStealthActivate:
+  $type: gamedataStatusEffect_Record
+  AIData: BaseStatusEffect.Ping_inline6
+  duration: ''
+  dynamicDuration: False
+  isAffectedByTimeDilationNPC: True
+  isAffectedByTimeDilationPlayer: True
+  maxStacks: RTDB.StatusEffect_inline0
+  reapplyPackagesOnMaxStacks: False
+  removeAllStacksWhenDurationEnds: False
+  removeOnStoryTier: False
+  replicated: False
+  savable: False
+  statusEffectType: BaseStatusEffectTypes.Misc
+  stopActiveSfxOnDeactivate: True
+  uiData: SING.StealthActivateUI
+  debugTags: []
+  gameplayTags: []
+  immunityStats: []
+  packages: []
+  SFX: []
+  VFX: []
+
+SING.StealthActivateUI:
+  $type: gamedataStatusEffectUIData_Record
+  description: ''
+  displayName: S.I.N.G. Stealth Activation
+  fluffText: ''
+  iconPath: ''
+  priority: 0
+  floatValues: []
+  intValues: []
+  nameValues: []
+  stats: []
+
+BaseStatusEffect.SINGDefenseActivate:
+  $type: gamedataStatusEffect_Record
+  AIData: BaseStatusEffect.Ping_inline6
+  duration: ''
+  dynamicDuration: False
+  isAffectedByTimeDilationNPC: True
+  isAffectedByTimeDilationPlayer: True
+  maxStacks: RTDB.StatusEffect_inline0
+  reapplyPackagesOnMaxStacks: False
+  removeAllStacksWhenDurationEnds: False
+  removeOnStoryTier: False
+  replicated: False
+  savable: False
+  statusEffectType: BaseStatusEffectTypes.Misc
+  stopActiveSfxOnDeactivate: True
+  uiData: SING.DefenseActivateUI
+  debugTags: []
+  gameplayTags: []
+  immunityStats: []
+  packages: []
+  SFX: []
+  VFX: []
+
+SING.DefenseActivateUI:
+  $type: gamedataStatusEffectUIData_Record
+  description: ''
+  displayName: S.I.N.G. Defense Activation
+  fluffText: ''
+  iconPath: ''
+  priority: 0
+  floatValues: []
+  intValues: []
+  nameValues: []
+  stats: []
+
+BaseStatusEffect.SINGOffenseActivate:
+  $type: gamedataStatusEffect_Record
+  AIData: BaseStatusEffect.Ping_inline6
+  duration: ''
+  dynamicDuration: False
+  isAffectedByTimeDilationNPC: True
+  isAffectedByTimeDilationPlayer: True
+  maxStacks: RTDB.StatusEffect_inline0
+  reapplyPackagesOnMaxStacks: False
+  removeAllStacksWhenDurationEnds: False
+  removeOnStoryTier: False
+  replicated: False
+  savable: False
+  statusEffectType: BaseStatusEffectTypes.Misc
+  stopActiveSfxOnDeactivate: True
+  uiData: SING.OffenseActivateUI
+  debugTags: []
+  gameplayTags: []
+  immunityStats: []
+  packages: []
+  SFX: []
+  VFX: []
+
+SING.OffenseActivateUI:
+  $type: gamedataStatusEffectUIData_Record
+  description: ''
+  displayName: S.I.N.G. Offense Activation
+  fluffText: ''
+  iconPath: ''
+  priority: 0
+  floatValues: []
+  intValues: []
+  nameValues: []
+  stats: []
